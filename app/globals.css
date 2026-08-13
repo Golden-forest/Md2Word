@@ -202,3 +202,52 @@ footer a:hover { color: var(--accent); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
 }
+
+/* ---------- shared top bar actions ---------- */
+.topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+/* ---------- batch page ---------- */
+.batch-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 38px 24px 26px;
+  background: var(--paper);
+  border: 1px solid #e3e3e5;
+  border-radius: 20px;
+  box-shadow: 0 15px 45px rgba(0,0,0,.055);
+}
+.pick-folder-button {
+  min-width: 200px; min-height: 46px; padding: 0 22px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+  border: 0; border-radius: 14px; color: #fff; background: var(--accent);
+  box-shadow: 0 7px 18px rgba(23,107,77,.19); cursor: pointer;
+  font-size: 13px; font-weight: 650;
+}
+.pick-folder-button:hover { background: var(--accent-dark); }
+.pick-folder-button:disabled { opacity: .6; cursor: wait; }
+.batch-controls { display: flex; flex-direction: column; align-items: center; gap: 7px; width: 100%; }
+.batch-controls .download-button { width: min(360px, 100%); }
+.batch-hint { color: var(--muted); font-size: 11px; text-align: center; }
+.batch-remote-note { color: var(--muted); font-size: 11px; }
+.batch-notice { margin: 14px 0 0; padding: 11px 16px; text-align: center; color: var(--accent-dark);
+  background: var(--accent-soft); border: 1px solid #cfe6db; border-radius: 11px; font-size: 12px; }
+.batch-list { margin-top: 16px; padding: 18px 20px; background: var(--paper);
+  border: 1px solid #e3e3e5; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,.04); }
+.batch-summary { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+.batch-list ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.batch-item { display: flex; align-items: center; gap: 9px; padding: 8px 6px; border-radius: 8px; font-size: 12px; }
+.batch-item.is-ok { color: var(--accent-dark); }
+.batch-item.is-fail { color: #7c2828; background: #fff3f2; }
+.batch-item.is-pending { color: var(--muted); }
+.batch-item-icon { display: grid; place-items: center; flex: 0 0 auto; }
+.batch-item-path { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: "SFMono-Regular", Consolas, Menlo, monospace; }
+.batch-item-error { color: #9a3232; font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 40%; }
+
+@media (max-width: 820px) {
+  .batch-dropzone { padding: 28px 16px 20px; }
+}
+@media (max-width: 520px) {
+  .batch-item-error { display: none; }
+}

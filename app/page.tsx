@@ -7,6 +7,7 @@ import {
   ChevronDown,
   Download,
   FileText,
+  FolderTree,
   Languages,
   LoaderCircle,
   RotateCcw,
@@ -17,6 +18,7 @@ import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
+import { buildConvertOptions, safeFilename } from "@/lib/convert";
 import { SAMPLE_MARKDOWN } from "@/lib/sample";
 
 // Allow only safe raster image data URLs; reject svg (script/external-resource risk).
@@ -82,11 +84,6 @@ const copy = {
   },
 } as const;
 
-function safeFilename(name: string) {
-  const stem = name.replace(/\.(md|markdown)$/i, "").replace(/[\\/:*?\"<>|]/g, "-").trim();
-  return `${stem || "document"}.docx`;
-}
-
 export default function Home() {
   const [locale, setLocale] = useState<Locale>("zh");
   const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
@@ -120,28 +117,7 @@ export default function Home() {
     setStatus("working");
     setMessage("");
     try {
-      const blob = await convertMarkdownToDocx(markdown, {
-        documentType: "document",
-        style: {
-          fontFamily: "Microsoft YaHei",
-          language: "zh-CN",
-          paragraphSize: 22,
-          listItemSize: 22,
-          heading1Size: 32,
-          heading2Size: 28,
-          heading3Size: 26,
-          heading4Size: 24,
-          heading5Size: 22,
-          heading6Size: 22,
-          lineSpacing: 1.5,
-          paragraphSpacing: 180,
-          headingSpacing: 220,
-          tableLayout: "autofit",
-        },
-        codeHighlighting: { enabled: true },
-        mathRendering: { enabled: true, unsupported: "text" },
-        metadata: { language: "zh-CN", title: filename.replace(/\.docx$/, "") },
-      });
+      const blob = await convertMarkdownToDocx(markdown, buildConvertOptions(filename));
       await downloadDocx(blob, filename);
       setStatus("done");
       window.setTimeout(() => setStatus("idle"), 2200);
@@ -162,15 +138,21 @@ export default function Home() {
             <span>{t.tagline}</span>
           </div>
         </div>
-        <button
-          className="language-button"
-          onClick={() => setLocale(locale === "zh" ? "en" : "zh")}
-          title={locale === "zh" ? "Switch to English" : "切换到中文"}
-        >
-          <Languages size={17} />
-          <span>{locale === "zh" ? "中文" : "English"}</span>
-          <ChevronDown size={14} />
-        </button>
+        <div className="topbar-actions">
+          <a className="language-button" href="/batch" title={locale === "zh" ? "批量转换文件夹" : "Batch convert a folder"}>
+            <FolderTree size={17} />
+            <span>{locale === "zh" ? "批量" : "Batch"}</span>
+          </a>
+          <button
+            className="language-button"
+            onClick={() => setLocale(locale === "zh" ? "en" : "zh")}
+            title={locale === "zh" ? "Switch to English" : "切换到中文"}
+          >
+            <Languages size={17} />
+            <span>{locale === "zh" ? "中文" : "English"}</span>
+            <ChevronDown size={14} />
+          </button>
+        </div>
       </header>
 
       <section className="workspace" aria-label="Markdown converter">
