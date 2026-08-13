@@ -10,6 +10,7 @@ import {
   FolderTree,
   Languages,
   LoaderCircle,
+  Printer,
   RotateCcw,
   Sparkles,
   Upload,
@@ -51,6 +52,7 @@ const copy = {
     clear: "清空",
     sample: "载入示例",
     downloadMarkdown: "下载 Markdown",
+    downloadPdf: "下载 PDF",
     download: "下载 Word",
     converting: "正在生成",
     ready: "文档已下载",
@@ -76,6 +78,7 @@ const copy = {
     clear: "Clear",
     sample: "Load sample",
     downloadMarkdown: "Download Markdown",
+    downloadPdf: "Download PDF",
     download: "Download Word",
     converting: "Generating",
     ready: "Document downloaded",
@@ -129,6 +132,15 @@ export default function Home() {
     link.remove();
     URL.revokeObjectURL(url);
   };
+
+  const handlePrint = useCallback(() => {
+    if (!markdown.trim()) {
+      setMessage(t.empty);
+      return;
+    }
+    // The printable area is .markdown-preview, isolated by @media print rules.
+    window.print();
+  }, [markdown, t.empty]);
 
   const handleDownload = async () => {
     if (!markdown.trim()) {
@@ -264,6 +276,9 @@ export default function Home() {
           <FileText size={16} />
           <input value={filename} onChange={(event) => setFilename(safeFilename(event.target.value.replace(/\.docx$/i, "")))} aria-label="Word filename" />
         </div>
+        <button className="secondary-button" onClick={handlePrint} disabled={!markdown.trim()} title={t.downloadPdf}>
+          <Printer size={18} /><span>{t.downloadPdf}</span>
+        </button>
         <button className={`download-button ${status === "done" ? "is-done" : ""}`} onClick={handleDownload} disabled={status === "working"}>
           {status === "working" ? <LoaderCircle className="spin" size={19} /> : status === "done" ? <Check size={19} /> : <Download size={19} />}
           <span>{status === "working" ? t.converting : status === "done" ? t.ready : t.download}</span>

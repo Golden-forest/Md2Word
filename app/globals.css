@@ -183,6 +183,9 @@ button { color: inherit; }
 .download-button:hover { background: var(--accent-dark); transform: translateY(-1px); }
 .download-button:disabled { cursor: wait; opacity: .75; transform: none; }
 .download-button.is-done { background: #484a4e; }
+.secondary-button { height: 44px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 1px solid #cfd0d2; border-radius: 14px; color: #3c3f44; background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: border-color .15s ease, color .15s ease; }
+.secondary-button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+.secondary-button:disabled { opacity: .4; cursor: default; }
 .spin { animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -219,6 +222,49 @@ footer a:hover { color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; }
+}
+
+/* ---------- print: only the preview content reaches the PDF ---------- */
+@media print {
+  @page { margin: 18mm 16mm; }
+
+  html, body {
+    background: #ffffff !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Hide everything, then reveal only the preview subtree. position:absolute
+     pulls it out of the grid/height/overflow constraints of the app shell so
+     the full content paginates instead of being clipped. */
+  body * { visibility: hidden; }
+  .markdown-preview, .markdown-preview * { visibility: visible; }
+  .markdown-preview {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0 !important;
+    overflow: visible !important;
+    font-size: 12pt;
+    line-height: 1.6;
+  }
+
+  /* No dark/color backgrounds in print; keep legible black-on-white. */
+  .markdown-preview pre { color: #1d1e20; background: #f3f4f4 !important; white-space: pre-wrap; word-break: break-word; }
+  .markdown-preview code { background: #f0f1f2 !important; }
+  .markdown-preview blockquote { background: transparent; border-left-color: #888; }
+  .markdown-preview th { background: #f3f4f4 !important; }
+  .markdown-preview tr:nth-child(even) td { background: #fafafa !important; }
+
+  /* Tables and code must wrap instead of horizontally scrolling (no scroll in print). */
+  .markdown-preview table { display: table; width: 100%; white-space: normal; overflow: visible; }
+  .markdown-preview th, .markdown-preview td { word-break: break-word; }
+  .markdown-preview .katex-display { overflow: visible; }
+
+  /* Avoid splitting these blocks across pages where avoidable. */
+  .markdown-preview pre, .markdown-preview table, .markdown-preview img, .markdown-preview blockquote { break-inside: avoid; }
+  .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 { break-after: avoid; }
 }
 
 /* ---------- shared top bar actions ---------- */
