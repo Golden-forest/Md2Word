@@ -183,7 +183,11 @@ export async function rewriteDocumentXml(xml: string): Promise<string> {
 export async function fixMathFallbacks(blob: Blob): Promise<Blob> {
   try {
     const { default: JSZip } = await import("jszip");
-    const zip = await JSZip.loadAsync(blob);
+    // Normalise to ArrayBuffer: JSZip accepts Blob in browsers but rejects the
+    // Node-native Blob (and Buffer), throwing "Can't read the data ...". An
+    // ArrayBuffer is accepted in both runtimes, so the post-processor works
+    // identically in the browser and in Node verification scripts.
+    const zip = await JSZip.loadAsync(await blob.arrayBuffer());
     const docFile = zip.file("word/document.xml");
     if (!docFile) return blob;
     const original = await docFile.async("string");
