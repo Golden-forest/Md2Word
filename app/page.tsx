@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { convertMarkdownToDocx, downloadDocx } from "@mohtasham/md-to-docx";
+import { downloadDocx } from "@mohtasham/md-to-docx";
 import {
   Check,
   ChevronDown,
@@ -18,7 +18,7 @@ import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
-import { buildConvertOptions, safeFilename } from "@/lib/convert";
+import { convertWithMath, safeFilename } from "@/lib/convert";
 import { SAMPLE_MARKDOWN } from "@/lib/sample";
 
 // Allow only safe raster image data URLs; reject svg (script/external-resource risk).
@@ -86,7 +86,7 @@ const copy = {
 
 export default function Home() {
   const [locale, setLocale] = useState<Locale>("zh");
-  const [markdown, setMarkdown] = useState(SAMPLE_MARKDOWN);
+  const [markdown, setMarkdown] = useState("");
   const [filename, setFilename] = useState("markdown-document.docx");
   const [dragging, setDragging] = useState(false);
   const [status, setStatus] = useState<"idle" | "working" | "done">("idle");
@@ -117,7 +117,7 @@ export default function Home() {
     setStatus("working");
     setMessage("");
     try {
-      const blob = await convertMarkdownToDocx(markdown, buildConvertOptions(filename));
+      const blob = await convertWithMath(markdown, filename);
       await downloadDocx(blob, filename);
       setStatus("done");
       window.setTimeout(() => setStatus("idle"), 2200);
@@ -132,7 +132,7 @@ export default function Home() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true"><FileText size={20} strokeWidth={2.2} /></span>
+          <span className="brand-mark" aria-hidden="true">MW</span>
           <div>
             <strong>Markdown to Word</strong>
             <span>{t.tagline}</span>

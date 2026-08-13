@@ -1,19 +1,17 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { convertMarkdownToDocx } from "@mohtasham/md-to-docx";
 import {
   Check,
   ChevronDown,
   CircleAlert,
   Download,
   FileText,
-  FolderTree,
   Languages,
   LoaderCircle,
   Upload,
 } from "lucide-react";
-import { buildConvertOptions, safeFilename } from "@/lib/convert";
+import { convertWithMath, safeFilename } from "@/lib/convert";
 
 type Locale = "zh" | "en";
 type Status = "pending" | "ok" | "fail";
@@ -156,7 +154,7 @@ export default function BatchPage() {
       async (item, i): Promise<OutputFile | null> => {
         try {
           const text = await item.file.text();
-          const blob = await convertMarkdownToDocx(text, buildConvertOptions(item.outName));
+          const blob = await convertWithMath(text, item.outName);
           updateItem(i, { status: "ok" });
           return { path: toOutputPath(item.relPath, item.outName), blob };
         } catch (error) {
@@ -204,7 +202,7 @@ export default function BatchPage() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true"><FolderTree size={20} strokeWidth={2.2} /></span>
+          <span className="brand-mark" aria-hidden="true">MW</span>
           <div>
             <strong>{t.title}</strong>
             <span>{t.tagline}</span>

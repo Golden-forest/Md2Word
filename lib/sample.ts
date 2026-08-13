@@ -30,12 +30,36 @@ export function greet({ name, language }: Greeting) {
 
 ##### 数学公式 Math
 
-行内公式：质能方程 $E = mc^2$。
+行内公式：质能方程 $E = mc^2$，向量 $\vec{F} = m\vec{a}$，立方根 $\sqrt[3]{x}$。
 
-块级公式：
+块级公式——求和：
 
 $$
 \sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+$$
+
+块级公式——积分：
+
+$$
+\int_{0}^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+$$
+
+块级公式——分段函数：
+
+$$
+\begin{cases} x = 1 \\ y = 2 \\ z = 3 \end{cases}
+$$
+
+块级公式——矩阵：
+
+$$
+\begin{pmatrix} a & b \\ c & d \end{pmatrix} \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
+$$
+
+块级公式——对齐方程组：
+
+$$
+\begin{aligned} a &= b + c \\ d &= e - f \end{aligned}
 $$
 
 ###### 六级标题 Heading 6
