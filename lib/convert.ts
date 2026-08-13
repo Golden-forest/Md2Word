@@ -1,6 +1,7 @@
 import type { Options } from "@mohtasham/md-to-docx";
 import { convertMarkdownToDocx } from "@mohtasham/md-to-docx";
 import { fixMathFallbacks } from "./fixMathFallbacks.ts";
+import { normalizeMathDelimiters } from "./normalizeMathDelimiters.ts";
 
 // Shared by the single-file page and the batch page so styling is identical.
 
@@ -40,6 +41,6 @@ export function buildConvertOptions(filename: string): Options {
 // identical. temml + jszip are dynamically imported inside fixMathFallbacks to
 // keep them out of the initial client bundle (and compatible with static export).
 export async function convertWithMath(md: string, filename: string): Promise<Blob> {
-  const blob = await convertMarkdownToDocx(md, buildConvertOptions(filename));
+  const blob = await convertMarkdownToDocx(normalizeMathDelimiters(md), buildConvertOptions(filename));
   return fixMathFallbacks(blob);
 }

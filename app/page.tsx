@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { downloadDocx } from "@mohtasham/md-to-docx";
 import {
   Check,
@@ -19,6 +19,7 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { convertWithMath, safeFilename } from "@/lib/convert";
+import { normalizeMathDelimiters } from "@/lib/normalizeMathDelimiters";
 import { SAMPLE_MARKDOWN } from "@/lib/sample";
 
 // Allow only safe raster image data URLs; reject svg (script/external-resource risk).
@@ -93,6 +94,7 @@ export default function Home() {
   const [message, setMessage] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const t = copy[locale];
+  const previewMarkdown = useMemo(() => normalizeMathDelimiters(markdown), [markdown]);
 
   const readFile = useCallback(async (file?: File) => {
     if (!file) return;
@@ -221,7 +223,7 @@ export default function Home() {
                   },
                 }}
               >
-                {markdown}
+                {previewMarkdown}
               </ReactMarkdown>
             ) : (
               <div className="empty-state"><FileText size={30} /><p>{t.placeholder}</p></div>
