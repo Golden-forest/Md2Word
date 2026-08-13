@@ -48,6 +48,7 @@ const copy = {
     browse: "或点击选择文件",
     clear: "清空",
     sample: "载入示例",
+    downloadMarkdown: "下载 Markdown",
     download: "下载 Word",
     converting: "正在生成",
     ready: "文档已下载",
@@ -70,6 +71,7 @@ const copy = {
     browse: "or click to choose a file",
     clear: "Clear",
     sample: "Load sample",
+    downloadMarkdown: "Download Markdown",
     download: "Download Word",
     converting: "Generating",
     ready: "Document downloaded",
@@ -110,6 +112,19 @@ export default function Home() {
       setMessage(copy[locale].fileError);
     }
   }, [locale]);
+
+  const handleMarkdownDownload = () => {
+    if (!markdown) return;
+    const blob = new Blob([markdown], { type: "text/markdown;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename.replace(/\.docx$/i, ".md");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
 
   const handleDownload = async () => {
     if (!markdown.trim()) {
@@ -164,6 +179,9 @@ export default function Home() {
             <div className="toolbar">
               <button className="tool-button" onClick={() => { setMarkdown(SAMPLE_MARKDOWN); setFilename("markdown-document.docx"); setMessage(""); }} title={t.sample}>
                 <Sparkles size={16} /><span>{t.sample}</span>
+              </button>
+              <button className="tool-button" onClick={handleMarkdownDownload} disabled={!markdown} title={t.downloadMarkdown}>
+                <Download size={16} /><span>{t.downloadMarkdown}</span>
               </button>
               <button className="tool-button" onClick={() => { setMarkdown(""); setMessage(""); }} disabled={!markdown} title={t.clear}>
                 <RotateCcw size={16} /><span>{t.clear}</span>
