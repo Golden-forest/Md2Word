@@ -50,10 +50,10 @@ npm run build      # 生成 out/ 目录
 | `CLOUDFLARE_ACCOUNT_ID` | 账户 ID | Cloudflare 控制台任意域名概览页右侧，或 Workers 页面右侧 |
 
 配置完成后，每次 `git push origin main` 都会触发：`npm ci` → `npm run build` →
-`wrangler pages deploy out`。默认地址为 `https://md2word.pages.dev`。
+`wrangler pages deploy out`。
 
-> 首次部署时 wrangler 会自动创建名为 `md2word` 的 Pages 项目；若想提前在控制台手动
-> 创建亦可。
+> 线上地址：<https://md2word-bkl.pages.dev>（`md2word.pages.dev` 子域名在 Cloudflare
+> 全局已被他人占用，故项目实际域名为 `md2word-bkl`）。
 
 ### 本地手动部署
 
