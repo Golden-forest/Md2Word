@@ -44,6 +44,8 @@ const copy = {
     editor: "Markdown",
     preview: "实时预览",
     placeholder: "在这里粘贴或输入 Markdown...",
+    previewEmpty: "预览区域为空,在左侧输入 Markdown 即可在此实时预览",
+    previewEmptyHint: "或上传一个 .md 文件",
     drop: "拖放 .md 文件到这里",
     browse: "或点击选择文件",
     clear: "清空",
@@ -67,6 +69,8 @@ const copy = {
     editor: "Markdown",
     preview: "Live preview",
     placeholder: "Paste or write Markdown here...",
+    previewEmpty: "Preview is empty. Type Markdown on the left and see it live here.",
+    previewEmptyHint: "or upload a .md file",
     drop: "Drop a .md file here",
     browse: "or click to choose a file",
     clear: "Clear",
@@ -244,7 +248,11 @@ export default function Home() {
                 {previewMarkdown}
               </ReactMarkdown>
             ) : (
-              <div className="empty-state"><FileText size={30} /><p>{t.placeholder}</p></div>
+              <div className="empty-state">
+                <FileText size={30} />
+                <p>{t.previewEmpty}</p>
+                <small>{t.previewEmptyHint}</small>
+              </div>
             )}
           </article>
           <div className="pane-footer remote-note">{t.remoteImage}</div>

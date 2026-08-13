@@ -1,3 +1,9 @@
+// IMPORTANT: this is a JS template literal. LaTeX backslash commands MUST be
+// written with a DOUBLE backslash (\\vec, \\frac, \\sum …). A single `\` starts
+// a JS escape sequence — `\v`→U+000B (vertical tab), `\f`→U+000C, `\b`→U+0008
+// — which corrupts the command into a control char (renders as a tofu box and
+// breaks the formula). The code-fence backticks below stay escaped (\`) because
+// they delimit the template. Regression-tested by scripts/verify-sample.mjs.
 export const SAMPLE_MARKDOWN = `# Markdown 转 Word 测试文档
 
 这是一份用于验证 **中文**、*English* 与中英文混排效果的完整示例。生成过程完全在浏览器本地完成。
@@ -30,36 +36,36 @@ export function greet({ name, language }: Greeting) {
 
 ##### 数学公式 Math
 
-行内公式：质能方程 $E = mc^2$，向量 $\vec{F} = m\vec{a}$，立方根 $\sqrt[3]{x}$。
+行内公式：质能方程 $E = mc^2$，向量 $\\vec{F} = m\\vec{a}$，立方根 $\\sqrt[3]{x}$。
 
 块级公式——求和：
 
 $$
-\sum_{i=1}^{n} i = \frac{n(n+1)}{2}
+\\sum_{i=1}^{n} i = \\frac{n(n+1)}{2}
 $$
 
 块级公式——积分：
 
 $$
-\int_{0}^{\infty} e^{-x^2}\,dx = \frac{\sqrt{\pi}}{2}
+\\int_{0}^{\\infty} e^{-x^2}\\,dx = \\frac{\\sqrt{\\pi}}{2}
 $$
 
 块级公式——分段函数：
 
 $$
-\begin{cases} x = 1 \\ y = 2 \\ z = 3 \end{cases}
+\\begin{cases} x = 1 \\\\ y = 2 \\\\ z = 3 \\end{cases}
 $$
 
 块级公式——矩阵：
 
 $$
-\begin{pmatrix} a & b \\ c & d \end{pmatrix} \begin{bmatrix} 1 & 0 \\ 0 & 1 \end{bmatrix}
+\\begin{pmatrix} a & b \\\\ c & d \\end{pmatrix} \\begin{bmatrix} 1 & 0 \\\\ 0 & 1 \\end{bmatrix}
 $$
 
 块级公式——对齐方程组：
 
 $$
-\begin{aligned} a &= b + c \\ d &= e - f \end{aligned}
+\\begin{aligned} a &= b + c \\\\ d &= e - f \\end{aligned}
 $$
 
 ###### 六级标题 Heading 6

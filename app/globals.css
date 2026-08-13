@@ -125,7 +125,19 @@ button { color: inherit; }
 .drop-overlay span { width: 48px; height: 48px; display: grid; place-items: center; background: white; border-radius: 14px; box-shadow: 0 4px 15px rgba(32,33,36,.1); }
 .drop-overlay strong { margin-top: 5px; font-size: 14px; }
 .drop-overlay small { color: #65676b; }
-.upload-button { min-height: 30px; margin-left: -8px; padding: 0 8px; border-radius: 8px; font-size: 11px; }
+.upload-button {
+  min-height: 32px;
+  margin-left: -8px;
+  padding: 0 14px;
+  gap: 8px;
+  border: 1px solid #dfdfe1;
+  border-radius: 9px;
+  background: rgba(255,255,255,.72);
+  color: #3c3f44;
+  font-size: 12px;
+  font-weight: 600;
+}
+.upload-button:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
 
 .markdown-preview {
   min-height: 0;
@@ -159,8 +171,9 @@ button { color: inherit; }
 .markdown-preview img { display: block; max-width: 100%; height: auto; margin: 18px auto; border-radius: 6px; }
 .markdown-preview .img-fallback { display: block; margin: 18px auto; padding: 12px 16px; max-width: 100%; color: #6b6e72; background: #f3f4f4; border: 1px dashed #cfd0d2; border-radius: 6px; font-size: 12px; text-align: center; overflow-wrap: anywhere; }
 .markdown-preview .katex-display { overflow-x: auto; overflow-y: hidden; padding: 8px 0; }
-.empty-state { height: 100%; min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #a0a2a6; }
-.empty-state p { font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+.empty-state { height: 100%; min-height: 260px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 9px; color: #a0a2a6; text-align: center; padding: 0 24px; }
+.empty-state p { font-family: -apple-system, BlinkMacSystemFont, sans-serif; font-size: 13px; max-width: 280px; line-height: 1.6; color: #8a8d92; }
+.empty-state small { font-size: 12px; color: #b0b2b6; }
 .remote-note { justify-content: flex-start; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 
 .action-row { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }

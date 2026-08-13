@@ -1,16 +1,10 @@
 // Generates a DOCX from the built-in sample using the same options as the app's
 // handleDownload(). Verification-only script — not part of the shipped app.
-// We read lib/sample.ts (the single source of truth) and resolve its template
-// literal in Node so we always test the real sample content.
-import { readFile, writeFile } from "node:fs/promises";
-
-const sampleSrc = await readFile(new URL("../lib/sample.ts", import.meta.url), "utf8");
-// lib/sample.ts is `export const SAMPLE_MARKDOWN = \`...\`;` — extract the body.
-const start = sampleSrc.indexOf("`") + 1;
-const end = sampleSrc.lastIndexOf("`");
-const raw = sampleSrc.slice(start, end);
-// Resolve the few escaped backticks/template chars the sample uses.
-const SAMPLE_MARKDOWN = raw.replaceAll("\\`", "`").replaceAll("\\$", "$").replaceAll("\\\\", "\\");
+// We import SAMPLE_MARKDOWN directly so Node evaluates the template literal
+// exactly as the browser does — no manual unescaping that could drift from the
+// source's escape rules (see scripts/verify-sample.mjs).
+import { writeFile } from "node:fs/promises";
+import { SAMPLE_MARKDOWN } from "../lib/sample.ts";
 
 const { convertMarkdownToBuffer } = await import("@mohtasham/md-to-docx");
 
