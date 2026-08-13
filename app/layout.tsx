@@ -3,7 +3,7 @@ import "katex/dist/katex.min.css";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Markdown to Word · CI 自动部署验证",
+  title: "Markdown to Word",
   description: "Convert Markdown to a polished Word document in your browser.",
 };
 
