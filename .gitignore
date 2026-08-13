@@ -3,6 +3,7 @@
 /out
 /.vercel
 /.npm-cache
+/.wrangler
 *.log
 .DS_Store
 *.docx

@@ -5,11 +5,12 @@
 
 ## 功能
 
-- 粘贴、编辑或拖拽上传 `.md` / `.markdown` 文件
+- 粘贴、编辑或拖拽上传 `.md` / `.markdown` 文件，实时预览
+- **批量转换**：选择整个文件夹，把里面所有 Markdown 一次性转成 Word，
+  保留原目录结构（详见 `/batch` 页）
 - 支持 GFM 表格、标题、列表、引用、链接、代码块、公式和脚注
-- 实时 Markdown 预览，中英文界面
 - 针对中文文档设置 Word 字体、字号、行距和标题层级
-- 在浏览器本地生成并下载 `.docx`
+- 在浏览器本地生成并下载 `.docx`，内容不上传服务器
 - 响应式桌面与移动端布局
 
 ## 本地运行
@@ -21,17 +22,52 @@ npm install
 npm run dev
 ```
 
-访问 [http://localhost:3000](http://localhost:3000)。生产构建：
+访问 [http://localhost:3000](http://localhost:3000)。批量转换在
+[http://localhost:3000/batch](http://localhost:3000/batch)。
+
+项目为静态导出（`output: "export"`），生产构建产出纯静态文件：
+
+```bash
+npm run build      # 生成 out/ 目录
+```
+
+`out/` 可直接用任意静态服务器托管，例如 `npx serve out`。静态导出不提供
+`next start` 服务。
+
+## 部署
+
+项目为纯前端静态导出，推荐 **GitHub + Cloudflare Pages** 组合：代码托管在 GitHub，
+推送到 `main` 时由 GitHub Actions 自动构建并部署到 Cloudflare Pages。
+
+### 自动部署（GitHub Actions，推荐）
+
+仓库已包含 `.github/workflows/deploy.yml`。首次使用前需要在 GitHub 仓库的
+**Settings → Secrets and variables → Actions** 配置两个 Secret：
+
+| Secret | 说明 | 获取方式 |
+|--------|------|----------|
+| `CLOUDFLARE_API_TOKEN` | Cloudflare API 令牌 | Cloudflare 控制台 → My Profile → API Tokens → Create Token，使用 *Edit Cloudflare Workers* 模板，或自定义包含 **Cloudflare Pages: Edit** 权限的令牌 |
+| `CLOUDFLARE_ACCOUNT_ID` | 账户 ID | Cloudflare 控制台任意域名概览页右侧，或 Workers 页面右侧 |
+
+配置完成后，每次 `git push origin main` 都会触发：`npm ci` → `npm run build` →
+`wrangler pages deploy out`。默认地址为 `https://md2word.pages.dev`。
+
+> 首次部署时 wrangler 会自动创建名为 `md2word` 的 Pages 项目；若想提前在控制台手动
+> 创建亦可。
+
+### 本地手动部署
+
+与自动部署等价的手动方式（需先执行 `npx wrangler login` 授权）：
 
 ```bash
 npm run build
-npm start
+npx wrangler pages deploy out --project-name=md2word
 ```
 
-## Vercel 部署
+### 其他平台
 
-将仓库导入 Vercel 即可。框架选择 **Next.js**，Build Command 使用
-`npm run build`，无需环境变量、数据库或服务端存储。
+`out/` 是纯静态产物，也可用 Vercel、Netlify 等任意静态托管服务，Build Command 为
+`npm run build`，输出目录 `out`，无需环境变量、数据库或服务端存储。
 
 ## 图片说明
 
