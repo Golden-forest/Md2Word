@@ -186,6 +186,22 @@ button { color: inherit; }
 .secondary-button { height: 44px; padding: 0 18px; display: inline-flex; align-items: center; justify-content: center; gap: 9px; border: 1px solid #cfd0d2; border-radius: 14px; color: #3c3f44; background: #fff; cursor: pointer; font-size: 13px; font-weight: 600; transition: border-color .15s ease, color .15s ease; }
 .secondary-button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
 .secondary-button:disabled { opacity: .4; cursor: default; }
+
+/* ---------- split download button + format menu ---------- */
+.download-split { position: relative; display: inline-flex; align-items: stretch; }
+.download-split .download-button { border-radius: 14px 0 0 14px; min-width: 148px; }
+.download-split-toggle { display: inline-flex; align-items: center; justify-content: center; width: 38px; border: 0; border-radius: 0 14px 14px 0; color: white; background: var(--accent); box-shadow: 0 7px 18px rgba(32,33,36,.19); cursor: pointer; transition: background .15s ease; border-left: 1px solid rgba(255,255,255,.18); }
+.download-split-toggle:hover:not(:disabled) { background: var(--accent-dark); }
+.download-split-toggle:disabled { cursor: default; opacity: .55; }
+.download-split-toggle .chevron { transition: transform .15s ease; }
+.download-split.is-open .download-split-toggle .chevron { transform: rotate(180deg); }
+.format-menu { position: absolute; right: 0; bottom: calc(100% + 8px); min-width: 210px; padding: 6px; background: #fff; border: 1px solid #dedfe1; border-radius: 14px; box-shadow: 0 12px 32px rgba(0,0,0,.14); z-index: 20; }
+.format-menu button { width: 100%; display: flex; align-items: center; gap: 11px; padding: 9px 11px; border: 0; border-radius: 9px; background: transparent; color: #3c3f44; font-size: 13px; font-weight: 600; cursor: pointer; text-align: left; }
+.format-menu button:hover:not(:disabled) { background: var(--accent-soft); color: var(--accent); }
+.format-menu button:disabled { opacity: .4; cursor: default; }
+.format-menu button .fmt-name { display: block; }
+.format-menu button .fmt-desc { display: block; font-size: 11px; font-weight: 400; color: var(--muted); margin-top: 1px; }
+.format-menu button.is-active { background: var(--accent-soft); }
 .spin { animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -217,6 +233,8 @@ footer a:hover { color: var(--accent); }
   .editor-wrap textarea { padding: 20px 18px 35px; }
   .action-row { align-items: stretch; flex-direction: column; }
   .file-field, .download-button { width: 100%; min-width: 0; }
+  .download-split { width: 100%; }
+  .download-split .download-button { flex: 1; }
   footer { padding-top: 6px; }
 }
 

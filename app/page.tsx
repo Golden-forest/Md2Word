@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { downloadDocx } from "@mohtasham/md-to-docx";
 import {
   Check,
   ChevronDown,
+  Code2,
   Download,
   FileText,
   FolderTree,
@@ -20,6 +21,7 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import { convertWithMath, safeFilename } from "@/lib/convert";
+import { buildHtmlDocument } from "@/lib/htmlTemplate";
 import { normalizeMathDelimiters } from "@/lib/normalizeMathDelimiters";
 import { SAMPLE_MARKDOWN } from "@/lib/sample";
 
@@ -52,7 +54,6 @@ const copy = {
     clear: "清空",
     sample: "载入示例",
     downloadMarkdown: "下载 Markdown",
-    downloadPdf: "下载 PDF",
     download: "下载 Word",
     converting: "正在生成",
     ready: "文档已下载",
@@ -60,6 +61,13 @@ const copy = {
     invalid: "请选择 .md 或 .markdown 文件。",
     fileError: "无法读取该文件，请重试。",
     convertError: "生成 Word 失败，请检查 Markdown 内容后重试。",
+    htmlError: "生成 HTML 失败，请重试。",
+    formatWord: "Word 文档",
+    formatPdf: "PDF",
+    formatHtml: "HTML 网页",
+    formatWordDesc: ".docx 可编辑",
+    formatPdfDesc: "打印另存为 PDF",
+    formatHtmlDesc: ".html 单文件网页",
     privacy: "文件仅在本地处理",
     remoteImage: "远程图片不会嵌入 Word；请使用 data: 图片。",
     words: "字符",
@@ -78,7 +86,6 @@ const copy = {
     clear: "Clear",
     sample: "Load sample",
     downloadMarkdown: "Download Markdown",
-    downloadPdf: "Download PDF",
     download: "Download Word",
     converting: "Generating",
     ready: "Document downloaded",
@@ -86,6 +93,13 @@ const copy = {
     invalid: "Choose a .md or .markdown file.",
     fileError: "This file could not be read. Please try again.",
     convertError: "Word generation failed. Check the Markdown and try again.",
+    htmlError: "HTML generation failed. Please try again.",
+    formatWord: "Word document",
+    formatPdf: "PDF",
+    formatHtml: "HTML page",
+    formatWordDesc: ".docx editable",
+    formatPdfDesc: "print to PDF",
+    formatHtmlDesc: ".html single file",
     privacy: "Files are processed locally",
     remoteImage: "Remote images are not embedded in Word; use data: images.",
     words: "characters",
@@ -101,9 +115,29 @@ export default function Home() {
   const [dragging, setDragging] = useState(false);
   const [status, setStatus] = useState<"idle" | "working" | "done">("idle");
   const [message, setMessage] = useState("");
+  const [menuOpen, setMenuOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const previewRef = useRef<HTMLElement>(null);
+  const splitRef = useRef<HTMLDivElement>(null);
   const t = copy[locale];
   const previewMarkdown = useMemo(() => normalizeMathDelimiters(markdown), [markdown]);
+
+  const disabled = !markdown.trim();
+
+  // Close the format menu on outside click / Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDown = (e: MouseEvent) => {
+      if (splitRef.current && !splitRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setMenuOpen(false); };
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menuOpen]);
 
   const readFile = useCallback(async (file?: File) => {
     if (!file) return;
@@ -141,6 +175,29 @@ export default function Home() {
     // The printable area is .markdown-preview, isolated by @media print rules.
     window.print();
   }, [markdown, t.empty]);
+
+  // Export the live preview DOM as a self-contained .html (inlined CSS + KaTeX).
+  const handleHtmlDownload = useCallback(() => {
+    if (!previewRef.current?.innerHTML?.trim()) {
+      setMessage(t.empty);
+      return;
+    }
+    try {
+      const html = buildHtmlDocument(previewRef.current.innerHTML, filename.replace(/\.docx$/i, ""));
+      const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename.replace(/\.docx$/i, ".html");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error(error);
+      setMessage(t.htmlError);
+    }
+  }, [filename, t.empty, t.htmlError]);
 
   const handleDownload = async () => {
     if (!markdown.trim()) {
@@ -241,7 +298,7 @@ export default function Home() {
             <div className="pane-title"><span className="preview-icon" aria-hidden="true" />{t.preview}</div>
             <span className="privacy"><Check size={14} />{t.privacy}</span>
           </div>
-          <article className="markdown-preview">
+          <article className="markdown-preview" ref={previewRef}>
             {markdown.trim() ? (
               <ReactMarkdown
                 remarkPlugins={[remarkGfm, remarkMath]}
@@ -276,13 +333,31 @@ export default function Home() {
           <FileText size={16} />
           <input value={filename} onChange={(event) => setFilename(safeFilename(event.target.value.replace(/\.docx$/i, "")))} aria-label="Word filename" />
         </div>
-        <button className="secondary-button" onClick={handlePrint} disabled={!markdown.trim()} title={t.downloadPdf}>
-          <Printer size={18} /><span>{t.downloadPdf}</span>
-        </button>
-        <button className={`download-button ${status === "done" ? "is-done" : ""}`} onClick={handleDownload} disabled={status === "working"}>
-          {status === "working" ? <LoaderCircle className="spin" size={19} /> : status === "done" ? <Check size={19} /> : <Download size={19} />}
-          <span>{status === "working" ? t.converting : status === "done" ? t.ready : t.download}</span>
-        </button>
+        <div className={`download-split ${menuOpen ? "is-open" : ""}`} ref={splitRef}>
+          {menuOpen && (
+            <div className="format-menu" role="menu">
+              <button className="is-active" role="menuitem" onClick={() => { setMenuOpen(false); void handleDownload(); }} disabled={status === "working"}>
+                <FileText size={17} />
+                <span><span className="fmt-name">{t.formatWord}</span><span className="fmt-desc">{t.formatWordDesc}</span></span>
+              </button>
+              <button role="menuitem" onClick={() => { setMenuOpen(false); handlePrint(); }}>
+                <Printer size={17} />
+                <span><span className="fmt-name">{t.formatPdf}</span><span className="fmt-desc">{t.formatPdfDesc}</span></span>
+              </button>
+              <button role="menuitem" onClick={() => { setMenuOpen(false); handleHtmlDownload(); }}>
+                <Code2 size={17} />
+                <span><span className="fmt-name">{t.formatHtml}</span><span className="fmt-desc">{t.formatHtmlDesc}</span></span>
+              </button>
+            </div>
+          )}
+          <button className={`download-button ${status === "done" ? "is-done" : ""}`} onClick={() => void handleDownload()} disabled={disabled || status === "working"}>
+            {status === "working" ? <LoaderCircle className="spin" size={19} /> : status === "done" ? <Check size={19} /> : <Download size={19} />}
+            <span>{status === "working" ? t.converting : status === "done" ? t.ready : t.download}</span>
+          </button>
+          <button className="download-split-toggle" onClick={() => setMenuOpen((o) => !o)} disabled={disabled || status === "working"} aria-haspopup="menu" aria-expanded={menuOpen} aria-label={t.download}>
+            <ChevronDown className="chevron" size={16} />
+          </button>
+        </div>
       </section>
 
       {message && <div className="toast" role="alert">{message}</div>}
