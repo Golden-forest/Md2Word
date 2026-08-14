@@ -3,7 +3,13 @@
  * remark-math and @mohtasham/md-to-docx. Markdown code is left untouched.
  */
 export function normalizeMathDelimiters(markdown: string): string {
-  if (!markdown.includes("\\(") && !markdown.includes("\\[")) return markdown;
+  // GPT/copied output sometimes drops the backslashes, turning block-math
+  // `\[ ... \]` into bare `[ ... ]`. When those brackets sit alone on their
+  // own lines we treat them as block math too (see bareBracketOpenAt). The
+  // cheap pre-scan keeps the common case (no math at all) on the fast path.
+  const hasStandardMath = markdown.includes("\\(") || markdown.includes("\\[");
+  const hasBareBracketMath = /\n[ \t]*\[[ \t]*\r?\n/.test(markdown) || /^\[[ \t]*\r?\n/.test(markdown);
+  if (!hasStandardMath && !hasBareBracketMath) return markdown;
 
   const code = markMarkdownCode(markdown);
   const parts: string[] = [];
@@ -12,27 +18,40 @@ export function normalizeMathDelimiters(markdown: string): string {
   let i = 0;
 
   while (i < markdown.length) {
-    const opener = delimiterAt(markdown, code, i, "\\(")
-      ? { close: "\\)", replacement: "$", multiline: false }
-      : delimiterAt(markdown, code, i, "\\[")
-        ? { close: "\\]", replacement: "$$", multiline: true }
-        : null;
+    let opener: { close: string; replacement: string; multiline: boolean; openLen: number; isBare: boolean } | null = null;
+    if (delimiterAt(markdown, code, i, "\\(")) {
+      opener = { close: "\\)", replacement: "$", multiline: false, openLen: 2, isBare: false };
+    } else if (delimiterAt(markdown, code, i, "\\[")) {
+      opener = { close: "\\]", replacement: "$$", multiline: true, openLen: 2, isBare: false };
+    } else if (markdown[i] === "[" && code[i] === 0 && bareBracketOpenAt(markdown, i)) {
+      opener = { close: "]", replacement: "$$", multiline: true, openLen: 1, isBare: true };
+    }
 
     if (!opener) {
       i++;
       continue;
     }
 
-    const close = findClosingDelimiter(markdown, code, i + 2, opener.close, opener.multiline);
+    const close = findClosingDelimiter(markdown, code, i + opener.openLen, opener.close, opener.multiline, opener.isBare);
     if (close === -1) {
-      i += 2;
+      i += opener.openLen;
       continue;
     }
 
+    // Rule 3: a bare-bracket block is only math if its body contains at least
+    // one LaTeX command (`\xxx`). Plain text like `[ hello ]` stays untouched.
+    if (opener.isBare) {
+      const body = markdown.slice(i + opener.openLen, close);
+      if (!/\\[a-zA-Z]/.test(body)) {
+        i += opener.openLen;
+        continue;
+      }
+    }
+
     parts.push(markdown.slice(cursor, i), opener.replacement);
-    parts.push(markdown.slice(i + 2, close), opener.replacement);
+    parts.push(markdown.slice(i + opener.openLen, close), opener.replacement);
     changed = true;
-    cursor = close + 2;
+    cursor = close + opener.close.length;
     i = cursor;
   }
 
@@ -47,18 +66,63 @@ function findClosingDelimiter(
   start: number,
   closing: string,
   multiline: boolean,
+  bareBracketClose = false,
 ): number {
-  for (let i = start; i < markdown.length - 1; i++) {
+  for (let i = start; i < markdown.length; i++) {
     if (!multiline && (markdown[i] === "\n" || markdown[i] === "\r")) return -1;
-    if (delimiterAt(markdown, code, i, closing)) return i;
+    if (delimiterAt(markdown, code, i, closing)) {
+      // A bare `]` is only a math closer when it sits alone on its line.
+      if (!bareBracketClose || bareBracketCloseAt(markdown, i)) return i;
+    }
   }
   return -1;
+}
+
+/**
+ * True when the `[` at `index` opens a bare-bracket math block: it must sit
+ * alone on its line — only whitespace before it on the line and a newline
+ * immediately after it. This is what distinguishes GPT's dropped-backslash
+ * `\[` (block math) from a footnote/link/task-list bracket (inline).
+ */
+function bareBracketOpenAt(markdown: string, index: number): boolean {
+  // Only whitespace between the line start and `[`.
+  for (let j = index - 1; j >= 0; j--) {
+    const c = markdown[j];
+    if (c === "\n") break;
+    if (c !== " " && c !== "\t") return false;
+  }
+  // `[` is followed by a newline (optional trailing spaces), or ends the doc.
+  for (let j = index + 1; j < markdown.length; j++) {
+    const c = markdown[j];
+    if (c === "\n" || c === "\r") return true;
+    if (c !== " " && c !== "\t") return false;
+  }
+  return true;
+}
+
+/** True when the `]` at `index` sits alone on its line (mirror of bareBracketOpenAt). */
+function bareBracketCloseAt(markdown: string, index: number): boolean {
+  for (let j = index - 1; j >= 0; j--) {
+    const c = markdown[j];
+    if (c === "\n") break;
+    if (c !== " " && c !== "\t") return false;
+  }
+  for (let j = index + 1; j < markdown.length; j++) {
+    const c = markdown[j];
+    if (c === "\n" || c === "\r") return true;
+    if (c !== " " && c !== "\t") return false;
+  }
+  return true;
 }
 
 function delimiterAt(markdown: string, code: Uint8Array, index: number, delimiter: string): boolean {
   return markdown.startsWith(delimiter, index)
     && code[index] === 0
-    && code[index + 1] === 0
+    // For multi-char delimiters the second char must also be outside code.
+    // `index + 1` may run past the end of the array (Uint8Array returns
+    // undefined there) — treat that as "not in code" so a delimiter at the
+    // very end of the document is still recognised.
+    && (index + 1 >= code.length || code[index + 1] === 0)
     // A preceding backslash makes this a literal, e.g. `\\\\(`.
     && (index === 0 || markdown[index - 1] !== "\\");
 }
